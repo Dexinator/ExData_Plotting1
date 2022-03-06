@@ -1,0 +1,36 @@
+install.packages("chron")
+library(chron)
+library(dplyr)
+library(lubridate)
+
+fileroute<-"C:/Users/jorge/Downloads/exdata_data_household_power_consumption/household_power_consumption.txt"
+EPC<-read.table(fileroute, header = TRUE, sep = ";", dec = ".")
+EPC_Data<-tbl_df(EPC)
+wrong_format<-select(EPC_Data,-(1:2))
+DT<-select(EPC_Data,(1:2))
+DT<-mutate(DT,FULL_DATE=paste(Date,Time))
+wrong_format<-lapply(wrong_format, as.numeric)
+EPC_bind<-cbind(DT,wrong_format)
+EPC_bind$Date<-as.Date(strptime(EPC$Date,"%d/%m/%Y"))
+EPC_bind$FULL_DATE<-strptime(EPC_bind$FULL_DATE,"%d/%m/%Y %H:%M:%S")
+EPC_bind$Time<-times(EPC$Time)
+final_Data<-filter(EPC_bind, Date >= as.Date("2007-02-01"), Date <= as.Date("2007-02-02"))
+
+with(final_Data, hist(Global_active_power,col="red",xlab="Global Active Power (kilowatts)",main="Global Active Power"))
+
+plot(final_Data$FULL_DATE,final_Data$Global_active_power,type = "l",xlab="",ylab="Global ACtive Power (kilowatts)")
+
+plot(final_Data$FULL_DATE,final_Data$Sub_metering_1,type = "l",col="grey",xlab="",ylab="Energy sub metering")
+lines(final_Data$FULL_DATE,final_Data$Sub_metering_2,type = "l",col="red")
+lines(final_Data$FULL_DATE,final_Data$Sub_metering_3,type = "l",col="blue")
+legend("topright", legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"),lwd = 1,col = c("grey", "red", "blue"))
+
+par(mfrow=c(2,2))
+plot(final_Data$FULL_DATE,final_Data$Global_active_power,type = "l",xlab="",ylab="Global ACtive Power")
+plot(final_Data$FULL_DATE,final_Data$Voltage,type = "l",xlab="datetime",ylab="Voltage")
+plot(final_Data$FULL_DATE,final_Data$Sub_metering_1,type = "l",col="grey",xlab="",ylab="Energy sub metering")
+lines(final_Data$FULL_DATE,final_Data$Sub_metering_2,type = "l",col="red")
+lines(final_Data$FULL_DATE,final_Data$Sub_metering_3,type = "l",col="blue")
+legend("topright", legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"),lwd = 1,col = c("grey", "red", "blue"))
+with(final_Data,plot(FULL_DATE,Global_reactive_power,type="l",xlab="datetime"))
+
